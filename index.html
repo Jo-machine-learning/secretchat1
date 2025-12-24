@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>John Secret Chat💭</title>
+<link rel="icon" type="image/jpeg" href="images/image.jpg">
+
 <style>
 * { box-sizing: border-box; }
 html, body { touch-action: manipulation; margin:0; padding:0; }
@@ -32,7 +34,9 @@ header {
 /* CHAT AREA */
 .chat-area { flex: 1; margin-top: 20px; margin-bottom: 80px; padding: 10px; overflow-y: auto; background: #f2f2f2; display: flex; flex-direction: column-reverse; }
 #wishlistList { list-style:none; padding:0; margin:0; display:flex; flex-direction:column-reverse; gap:10px; }
-.bubble { background:white; padding:12px 15px; border-radius:20px; max-width:80%; position:relative; animation: slideIn 0.3s; box-shadow:0 2px 4px rgba(0,0,0,0.1); display:flex; flex-direction:column; gap:5px; }
+.bubble { background:white; padding:12px 15px; border-radius:20px; max-width:80%; position:relative; animation: slideIn 0.3s; box-shadow:0 2px 4px rgba(0,0,0,0.1); display:flex; flex-direction:column; gap:5px; white-space: pre-wrap;
+word-break: break-word;
+}
 .bubble img { max-width:150px; border-radius:15px; margin-top:5px; }
 video { max-width:200px; border-radius:15px; margin-top:5px; }
 @keyframes slideIn { from {opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
@@ -140,6 +144,12 @@ video { max-width:200px; border-radius:15px; margin-top:5px; }
 </div>
 
 <script>
+function escapeHTML(text){
+    return text
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;");
+}
 
 /* PIN SYSTEM — (كما هو بدون تعديل) */
 const CORRECT_PIN="4862";
@@ -249,7 +259,10 @@ function createBubble(item){
     const bubble=document.createElement("div");
     bubble.className="bubble them " + (item.highlight ? "highlight-bubble" : ""); // ⭐ NEW
 
-    let content=`<div>${linkify(item.name||"")}</div>`;
+    let safeText = escapeHTML(item.name || "");
+    safeText = linkify(safeText);
+    let content = `<div>${safeText}</div>`;
+
     
     if(item.imageUrl){
         content += `<img src="${item.imageUrl}"><br>`;
@@ -263,7 +276,10 @@ function createBubble(item){
 
     content += `<small style="font-size:0.7rem;color:#666;">${formatDate(item.createdAt)}</small>
     <div style="text-align:right;">
-        <button onclick="copyText('${item.name?.replace(/'/g,"&#39;")||""}')">📋</button>
+        <button onclick="copyText(`${
+    (item.name || "").replace(/`/g,"\\`")
+}`)">📋</button>
+
         <button onclick="deleteItem('${item._id}')">❌</button>
 
         <!-- ⭐ NEW — Edit button -->
@@ -312,7 +328,7 @@ async function uploadFile(file){
 async function addItem(){
     const input=document.getElementById('item');
     const fileInput=document.getElementById('fileInput');
-    const text=input.value.trim();
+    const text = input.value;
     let imageUrl=null,videoUrl=null,fileUrl=null;
 
     if(fileInput.files.length>0){
@@ -392,4 +408,4 @@ document.getElementById('refreshBtn').onclick=async()=>{
 
 </script>
 </body>
-</html> i wanna make icon for this web page the image in images file and named image.jpg 
+</html>
