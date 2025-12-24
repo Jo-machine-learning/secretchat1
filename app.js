@@ -127,6 +127,56 @@ app.delete('/wishlist/:id', async (req, res) => {
   }
 });
 
+
+const sectionSchema = new mongoose.Schema({
+  name: String,
+  createdAt: { type: Date, default: Date.now }
+});
+const Section = mongoose.model('Section', sectionSchema);
+
+
+const messageSchema = new mongoose.Schema({
+  sectionId: { type: mongoose.Schema.Types.ObjectId, ref: 'Section' },
+  name: String,
+  createdAt: { type: Date, default: Date.now }
+});
+const Message = mongoose.model('Message', messageSchema);
+// GET جميع السكشنات
+app.get('/sections', async (req, res) => {
+  const sections = await Section.find().sort({ createdAt: 1 });
+  res.json(sections);
+});
+
+// POST سكشن جديد
+app.post('/sections', async (req, res) => {
+  const { name } = req.body;
+  const section = new Section({ name });
+  await section.save();
+  res.json(section);
+});
+
+// DELETE سكشن
+app.delete('/sections/:id', async (req, res) => {
+  await Section.findByIdAndDelete(req.params.id);
+  await Message.deleteMany({ sectionId: req.params.id });
+  res.json({ success: true });
+});
+
+// GET رسائل سكشن محدد
+app.get('/messages/:sectionId', async (req, res) => {
+  const messages = await Message.find({ sectionId: req.params.sectionId }).sort({ createdAt: -1 });
+  res.json(messages);
+});
+
+// POST رسالة جديدة في سكشن
+app.post('/messages', async (req, res) => {
+  const { sectionId, name } = req.body;
+  const msg = new Message({ sectionId, name });
+  await msg.save();
+  res.json(msg);
+});
+
+
 // ====== Start Server ======
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
