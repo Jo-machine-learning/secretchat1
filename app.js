@@ -176,6 +176,14 @@ app.post('/messages', async (req, res) => {
   res.json(msg);
 });
 
+async function ensureGeneralSection() {
+  const general = await Section.findOne({ name: "General" });
+  if (!general) {
+    const newGeneral = new Section({ name: "General" });
+    await newGeneral.save();
+    console.log("General section created");
+  }
+}
 
 // ====== Start Server ======
 const PORT = process.env.PORT || 3000;
