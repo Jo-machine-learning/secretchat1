@@ -6,6 +6,8 @@
 <link rel="icon" type="image/jpeg" href="images/image.jpg">
 
 <title>John Secret Chat💭</title>
+    
+
 <style>
 * { box-sizing: border-box; }
 html, body { touch-action: manipulation; margin:0; padding:0; }
@@ -97,6 +99,43 @@ overflow:hidden;
 min-height:45px;
 max-height:150px;
 white-space:pre-wrap;
+}
+/* ===== SECTION SYSTEM ===== */
+
+#sectionsBar{
+    display:flex;
+    gap:8px;
+    padding:6px 10px;
+    background:#111;
+    overflow-x:auto;
+    border-bottom:1px solid #333;
+}
+
+.sectionTab{
+    background:#333;
+    color:#fff;
+    padding:6px 14px;
+    border-radius:14px;
+    cursor:pointer;
+    white-space:nowrap;
+    font-size:0.85rem;
+    user-select:none;
+}
+
+.sectionTab.active{
+    background:#ccff00;
+    color:#000;
+    font-weight:bold;
+}
+
+.sectionTab.add{
+    background:#4caf50;
+    font-weight:bold;
+}
+
+.sectionTab.del{
+    background:#e53935;
+    font-weight:bold;
 }
 
 </style>
@@ -418,7 +457,118 @@ textarea.addEventListener("input", () => {
     textarea.style.height = textarea.scrollHeight + "px";
 });
 
+/* ===== SECTION SYSTEM ===== */
+let currentSectionId = null;
 
+function initSections() {
+    const header = document.querySelector("header");
+    const bar = document.createElement("div");
+    bar.id = "sectionsBar";
+    header.after(bar);
+    loadSections();
+}
+
+/* Load sections from server */
+async function loadSections(){
+    const res = await fetch('/sections');
+    const sections = await res.json();
+    const bar = document.getElementById("sectionsBar");
+    bar.innerHTML = "";
+
+    sections.forEach(sec => {
+        const div = document.createElement("div");
+        div.className = "sectionTab";
+        div.textContent = sec.name;
+        div.onclick = () => selectSection(sec._id, div);
+        bar.appendChild(div);
+    });
+
+    /* + button */
+    const add = document.createElement("div");
+    add.className = "sectionTab add";
+    add.textContent = "+";
+    add.onclick = addSection;
+    bar.appendChild(add);
+
+    /* delete button */
+    const del = document.createElement("div");
+    del.className = "sectionTab del";
+    del.textContent = "-";
+    del.onclick = deleteSection;
+    bar.appendChild(del);
+
+    /* auto select first section */
+    if(sections.length && !currentSectionId){
+        bar.querySelector(".sectionTab").click();
+    }
+}
+
+async function selectSection(id, el){
+    currentSectionId = id;
+    document.querySelectorAll(".sectionTab").forEach(t=>t.classList.remove("active"));
+    el.classList.add("active");
+    loadSectionMessages();
+}
+
+async function loadSectionMessages(){
+    if(!currentSectionId) return;
+    const res = await fetch(`/messages/${currentSectionId}`);
+    const data = await res.json();
+    const list = document.getElementById("wishlistList");
+    list.innerHTML = "";
+    data.forEach(msg => list.appendChild(createBubble(msg)));
+}
+
+/* Override addItem */
+const oldAddItem = window.addItem;
+window.addItem = async function(){
+    if(!currentSectionId){
+        alert("اختر سكشن أولًا");
+        return;
+    }
+    const input = document.getElementById("item");
+    const text = input.value.trim();
+    if(!text) return;
+
+    await fetch('/messages',{
+        method: 'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+            sectionId: currentSectionId,
+            name: text,
+            createdAt: new Date().toISOString()
+        })
+    });
+
+    input.value = "";
+    loadSectionMessages();
+};
+
+/* Add Section */
+async function addSection(){
+    const name = prompt("اكتب اسم السكشن الجديد:");
+    if(!name) return;
+    await fetch('/sections',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({name})
+    });
+    loadSections();
+}
+
+/* Delete Section */
+async function deleteSection(){
+    if(!currentSectionId) return;
+    if(!confirm("هل انت متأكد انك عايز تمسح السكشن دا وكل البيانات اللي فيه؟")) return;
+    await fetch(`/sections/${currentSectionId}`,{method:'DELETE'});
+    currentSectionId = null;
+    loadSections();
+}
+
+/* Init Sections after DOM loaded */
+window.addEventListener("DOMContentLoaded", initSections);
+
+    
 </script>
 </body>
 </html> 
