@@ -142,8 +142,13 @@ const Section = mongoose.model('Section', sectionSchema);
 const messageSchema = new mongoose.Schema({
   sectionId: { type: mongoose.Schema.Types.ObjectId, ref: 'Section' },
   name: String,
+  imageUrl: String,
+  videoUrl: String,
+  fileUrl: String,
+  highlight: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now }
 });
+
 const Message = mongoose.model('Message', messageSchema);
 // GET جميع السكشنات
 app.get('/sections', async (req, res) => {
