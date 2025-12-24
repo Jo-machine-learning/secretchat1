@@ -276,9 +276,11 @@ function createBubble(item){
 
     content += `<small style="font-size:0.7rem;color:#666;">${formatDate(item.createdAt)}</small>
     <div style="text-align:right;">
-        <button onclick="copyText(`${
-    (item.name || "").replace(/`/g,"\\`")
-}`)">📋</button>
+    <button onclick="copyText(this.dataset.text)" 
+            data-text="${escapeHTML(item.name || "")}">
+    📋
+    </button>
+
 
         <button onclick="deleteItem('${item._id}')">❌</button>
 
