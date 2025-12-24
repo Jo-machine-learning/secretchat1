@@ -458,6 +458,7 @@ textarea.addEventListener("input", () => {
 });
 
 <script>
+<script>
 /* ===== SECTION SYSTEM ===== */
 let currentSectionId = null;
 
@@ -476,14 +477,14 @@ async function loadSections() {
     const bar = document.getElementById("sectionsBar");
     bar.innerHTML = "";
 
-    // ⭐ إضافة General
+    // ⭐ General
     const generalDiv = document.createElement("div");
     generalDiv.className = "sectionTab";
     generalDiv.textContent = "General";
-    generalDiv.onclick = () => selectSection(null, generalDiv); // null يعني كل الرسائل القديمة
+    generalDiv.onclick = () => selectSection(null, generalDiv);
     bar.appendChild(generalDiv);
 
-    // إضافة باقي السكشنات
+    // باقي السكشنات
     sections.forEach(sec => {
         const div = document.createElement("div");
         div.className = "sectionTab";
@@ -505,7 +506,7 @@ async function loadSections() {
     del.onclick = deleteSection;
     bar.appendChild(del);
 
-    // اختيار General تلقائيًا عند أول تحميل
+    // اختيار General تلقائيًا
     currentSectionId = null;
     generalDiv.classList.add("active");
     loadSectionMessages();
@@ -558,6 +559,7 @@ async function addItemToSection() {
 
     const body = {
         name: text,
+        highlight: highlightMode,
         createdAt: new Date().toISOString()
     };
 
@@ -569,7 +571,6 @@ async function addItemToSection() {
             body: JSON.stringify(body)
         });
     } else {
-        // General
         await fetch('/wishlist', {
             method: 'POST',
             headers: {'Content-Type':'application/json'},
@@ -578,6 +579,8 @@ async function addItemToSection() {
     }
 
     input.value = "";
+    highlightMode = false;
+    document.getElementById("highlightBtn").style.background = "#ccff00";
     loadSectionMessages();
 }
 
@@ -593,6 +596,7 @@ document.getElementById('item').onkeydown = (e) => {
     }
 };
 </script>
+
 
 </body>
 </html> 
