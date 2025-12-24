@@ -457,6 +457,7 @@ textarea.addEventListener("input", () => {
     textarea.style.height = textarea.scrollHeight + "px";
 });
 
+<script>
 /* ===== SECTION SYSTEM ===== */
 let currentSectionId = null;
 
@@ -510,27 +511,6 @@ async function loadSections() {
     loadSectionMessages();
 }
 
-
-    /* + button */
-    const add = document.createElement("div");
-    add.className = "sectionTab add";
-    add.textContent = "+";
-    add.onclick = addSection;
-    bar.appendChild(add);
-
-    /* delete button */
-    const del = document.createElement("div");
-    del.className = "sectionTab del";
-    del.textContent = "-";
-    del.onclick = deleteSection;
-    bar.appendChild(del);
-
-    /* auto select first section */
-    if(sections.length && !currentSectionId){
-        bar.querySelector(".sectionTab").click();
-    }
-}
-
 async function selectSection(id, el){
     currentSectionId = id;
     document.querySelectorAll(".sectionTab").forEach(t=>t.classList.remove("active"));
@@ -549,32 +529,6 @@ async function loadSectionMessages() {
     data.forEach(msg => list.appendChild(createBubble(msg)));
 }
 
-const oldAddItem = window.addItem;
-window.addItem = async function() {
-    await addItemToSection(); // ✅ يسمح للـ General أو أي سكش
-    
-    if(!currentSectionId){
-        alert("اختر سكشن أولًا");
-        return;
-    }
-    const input = document.getElementById("item");
-    const text = input.value.trim();
-    if(!text) return;
-
-    await fetch('/messages',{
-        method: 'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({
-            sectionId: currentSectionId,
-            name: text,
-            createdAt: new Date().toISOString()
-        })
-    });
-
-    input.value = "";
-    loadSectionMessages();
-};
-
 /* Add Section */
 async function addSection(){
     const name = prompt("اكتب اسم السكشن الجديد:");
@@ -582,7 +536,7 @@ async function addSection(){
     await fetch('/sections',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({name})
+        body:JSON.stringify({name})
     });
     loadSections();
 }
@@ -596,10 +550,7 @@ async function deleteSection(){
     loadSections();
 }
 
-/* Init Sections after DOM loaded */
-window.addEventListener("DOMContentLoaded", initSections);
-
-
+/* Add item to section or General */
 async function addItemToSection() {
     const input = document.getElementById("item");
     const text = input.value.trim();
@@ -610,7 +561,6 @@ async function addItemToSection() {
         createdAt: new Date().toISOString()
     };
 
-    // لو سكشن محدد، نضيف sectionId، وإلا General
     if(currentSectionId){
         body.sectionId = currentSectionId;
         await fetch('/messages', {
@@ -631,10 +581,18 @@ async function addItemToSection() {
     loadSectionMessages();
 }
 
+/* Init Sections after DOM loaded */
+window.addEventListener("DOMContentLoaded", initSections);
 
+/* ربط زر الإرسال بالـ textarea */
 document.getElementById('addButton').onclick = addItemToSection;
-
- 
+document.getElementById('item').onkeydown = (e) => {
+    if (e.key === 'Enter' && e.ctrlKey) {
+        e.preventDefault();
+        addItemToSection();
+    }
+};
 </script>
+
 </body>
 </html> 
