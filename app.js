@@ -12,8 +12,12 @@ app.use(bodyParser.json());
 // ====== MongoDB Connection ======
 const dbURI = "mongodb+srv://john:john@john.gevwwjw.mongodb.net/wishList?retryWrites=true&w=majority&appName=john";
 mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log('Connected to MongoDB'))
+  .then(() => {
+    console.log('Connected to MongoDB');
+    ensureGeneralSection();  // ✅ هذا يضمن وجود General
+  })
   .catch(err => console.error('MongoDB connection error:', err));
+;
 
 // ====== Online Users Tracking ======
 const activeUsers = new Map();
