@@ -549,10 +549,10 @@ async function loadSectionMessages() {
     data.forEach(msg => list.appendChild(createBubble(msg)));
 }
 
-
-/* Override addItem */
 const oldAddItem = window.addItem;
-window.addItem = async function(){
+window.addItem = async function() {
+    await addItemToSection(); // ✅ يسمح للـ General أو أي سكش
+    
     if(!currentSectionId){
         alert("اختر سكشن أولًا");
         return;
