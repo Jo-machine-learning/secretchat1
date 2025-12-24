@@ -385,12 +385,6 @@ function createBubble(item){
     return li;
 }
 
-    content += `</div>`;
-    bubble.innerHTML = content;
-    li.appendChild(bubble);
-    return li;
-}
-
 function noScrollDown(){ document.querySelector(".chat-area").scrollTo({ top:0, behavior:'smooth'}); }
 
 async function fetchWishlist(){
