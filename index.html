@@ -299,7 +299,7 @@ document.getElementById("highlightBtn").onclick = () => {
 };
 
 /* BUBBLES */
-function createBubble(item){
+function createBubble(item, isSection = false){
     const li=document.createElement("li");
     const bubble=document.createElement("div");
     bubble.className="bubble them " + (item.highlight ? "highlight-bubble" : "");
@@ -311,6 +311,7 @@ function createBubble(item){
     pre.textContent = item.name || "";
     bubble.appendChild(pre);
 
+    // الملفات
     if(item.imageUrl){
         const img = document.createElement("img");
         img.src = item.imageUrl;
@@ -342,22 +343,20 @@ function createBubble(item){
     const btnDiv = document.createElement("div");
     btnDiv.style.textAlign = "right";
 
-    // Copy button
+    // Copy, Edit, Delete buttons
     const copyBtn = document.createElement("button");
     copyBtn.textContent = "📋";
     copyBtn.addEventListener("click", ()=> copyText(item.name || ""));
     btnDiv.appendChild(copyBtn);
 
-    // Delete button
     const delBtn = document.createElement("button");
     delBtn.textContent = "❌";
-    delBtn.addEventListener("click", ()=> deleteItem(item._id));
+    delBtn.addEventListener("click", ()=> deleteItem(item._id, isSection));
     btnDiv.appendChild(delBtn);
 
-    // Edit button
     const editBtn = document.createElement("button");
     editBtn.textContent = "✏️";
-    editBtn.addEventListener("click", ()=> editItem(item._id, item.name || ""));
+    editBtn.addEventListener("click", ()=> editItem(item._id, item.name || "", isSection));
     btnDiv.appendChild(editBtn);
 
     // Download buttons
@@ -445,21 +444,30 @@ async function addItem(){
     fetchWishlist();
 }
 
-async function deleteItem(id){ await fetch(`/wishlist/${id}`,{method:'DELETE'}); fetchWishlist(); }
 
+// DELETE item
+async function deleteItem(id, isSection = false) {
+    const url = isSection ? `/messages/${id}` : `/wishlist/${id}`;
+    await fetch(url, { method:'DELETE' });
+    isSection ? loadSectionMessages() : fetchWishlist();
+}
 /* ⭐ NEW — Edit message */
-async function editItem(id, oldText) {
+// Edit message
+async function editItem(id, oldText, isSection = false) {
     const newText = prompt("Edit your message:", oldText);
     if (!newText || newText.trim() === oldText) return;
-
-    await fetch(`/wishlist/${id}`, {
+    const url = isSection ? `/messages/${id}` : `/wishlist/${id}`;
+    await fetch(url, {
         method: 'PUT',
         headers: {'Content-Type':'application/json'},
         body: JSON.stringify({ name: newText })
     });
-
-    fetchWishlist();
+    isSection ? loadSectionMessages() : fetchWishlist();
 }
+
+    
+
+
 
 function copyText(t){ navigator.clipboard.writeText(t); }
 
@@ -569,8 +577,9 @@ async function loadSectionMessages() {
     const res = await fetch(url);
     const data = await res.json();
 
-    data.forEach(msg => list.appendChild(createBubble(msg)));
+    data.forEach(msg => list.appendChild(createBubble(msg, !!currentSectionId)));
 }
+
 
 /* Add Section */
 async function addSection(){
