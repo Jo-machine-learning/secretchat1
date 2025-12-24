@@ -519,6 +519,7 @@ async function loadSectionMessages(){
     data.forEach(msg => list.appendChild(createBubble(msg)));
 }
 
+
 /* Override addItem */
 const oldAddItem = window.addItem;
 window.addItem = async function(){
@@ -568,7 +569,33 @@ async function deleteSection(){
 /* Init Sections after DOM loaded */
 window.addEventListener("DOMContentLoaded", initSections);
 
-    
+
+async function addItemToSection() {
+    if(!currentSectionId){
+        alert("اختر سكشن أولًا");
+        return;
+    }
+    const input = document.getElementById("item");
+    const text = input.value.trim();
+    if(!text) return;
+
+    await fetch('/messages', {
+        method: 'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+            sectionId: currentSectionId,
+            name: text,
+            createdAt: new Date().toISOString()
+        })
+    });
+
+    input.value = "";
+    loadSectionMessages();
+}
+
+document.getElementById('addButton').onclick = addItemToSection;
+
+ 
 </script>
 </body>
 </html> 
