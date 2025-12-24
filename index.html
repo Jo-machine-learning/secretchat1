@@ -302,39 +302,88 @@ document.getElementById("highlightBtn").onclick = () => {
 function createBubble(item){
     const li=document.createElement("li");
     const bubble=document.createElement("div");
-    bubble.className="bubble them " + (item.highlight ? "highlight-bubble" : ""); // ⭐ NEW
+    bubble.className="bubble them " + (item.highlight ? "highlight-bubble" : "");
 
-    let content=`<pre style="margin:0;white-space:pre-wrap;font-family:inherit;">${linkify(item.name||"")}</pre>`;
-
-    
-    if(item.imageUrl){
-        content += `<img src="${item.imageUrl}"><br>`;
-    }
-    if(item.videoUrl){
-        content += `<video controls><source src="${item.videoUrl}"></video><br>`;
-    }
-    if(item.fileUrl){
-        content += `<a href="${item.fileUrl}" target="_blank" style="color:#4a90e2;">📄 Open File</a><br>`;
-    }
-
-    content += `<small style="font-size:0.7rem;color:#666;">${formatDate(item.createdAt)}</small>
-    <div style="text-align:right;">
-        <button onclick="copyText('${item.name?.replace(/'/g,"&#39;")||""}')">📋</button>
-        <button onclick="deleteItem('${item._id}')">❌</button>
-
-        <!-- ⭐ NEW — Edit button -->
-        <button onclick="editItem('${item._id}', '${item.name?.replace(/'/g,"&#39;")||""}')">✏️</button>
-    `;
+    const pre = document.createElement("pre");
+    pre.style.margin = "0";
+    pre.style.whiteSpace = "pre-wrap";
+    pre.style.fontFamily = "inherit";
+    pre.textContent = item.name || "";
+    bubble.appendChild(pre);
 
     if(item.imageUrl){
-        content += `<button onclick="downloadUrl('${item.imageUrl}','image.jpg')">⬇️</button>`;
+        const img = document.createElement("img");
+        img.src = item.imageUrl;
+        bubble.appendChild(img);
     }
     if(item.videoUrl){
-        content += `<button onclick="downloadUrl('${item.videoUrl}','video.mp4')">⬇️</button>`;
+        const vid = document.createElement("video");
+        vid.controls = true;
+        const source = document.createElement("source");
+        source.src = item.videoUrl;
+        vid.appendChild(source);
+        bubble.appendChild(vid);
     }
     if(item.fileUrl){
-        content += `<button onclick="downloadUrl('${item.fileUrl}','file')">⬇️</button>`;
+        const a = document.createElement("a");
+        a.href = item.fileUrl;
+        a.target = "_blank";
+        a.style.color = "#4a90e2";
+        a.textContent = "📄 Open File";
+        bubble.appendChild(a);
     }
+
+    const small = document.createElement("small");
+    small.style.fontSize = "0.7rem";
+    small.style.color = "#666";
+    small.textContent = formatDate(item.createdAt);
+    bubble.appendChild(small);
+
+    const btnDiv = document.createElement("div");
+    btnDiv.style.textAlign = "right";
+
+    // Copy button
+    const copyBtn = document.createElement("button");
+    copyBtn.textContent = "📋";
+    copyBtn.addEventListener("click", ()=> copyText(item.name || ""));
+    btnDiv.appendChild(copyBtn);
+
+    // Delete button
+    const delBtn = document.createElement("button");
+    delBtn.textContent = "❌";
+    delBtn.addEventListener("click", ()=> deleteItem(item._id));
+    btnDiv.appendChild(delBtn);
+
+    // Edit button
+    const editBtn = document.createElement("button");
+    editBtn.textContent = "✏️";
+    editBtn.addEventListener("click", ()=> editItem(item._id, item.name || ""));
+    btnDiv.appendChild(editBtn);
+
+    // Download buttons
+    if(item.imageUrl){
+        const dImg = document.createElement("button");
+        dImg.textContent = "⬇️";
+        dImg.addEventListener("click", ()=> downloadUrl(item.imageUrl,"image.jpg"));
+        btnDiv.appendChild(dImg);
+    }
+    if(item.videoUrl){
+        const dVid = document.createElement("button");
+        dVid.textContent = "⬇️";
+        dVid.addEventListener("click", ()=> downloadUrl(item.videoUrl,"video.mp4"));
+        btnDiv.appendChild(dVid);
+    }
+    if(item.fileUrl){
+        const dFile = document.createElement("button");
+        dFile.textContent = "⬇️";
+        dFile.addEventListener("click", ()=> downloadUrl(item.fileUrl,"file"));
+        btnDiv.appendChild(dFile);
+    }
+
+    bubble.appendChild(btnDiv);
+    li.appendChild(bubble);
+    return li;
+}
 
     content += `</div>`;
     bubble.innerHTML = content;
