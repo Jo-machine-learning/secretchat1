@@ -179,11 +179,19 @@ app.get('/messages/:sectionId', async (req, res) => {
 
 // POST رسالة جديدة في سكشن
 app.post('/messages', async (req, res) => {
-  const { sectionId, name } = req.body;
-  const msg = new Message({ sectionId, name });
+  const { sectionId, name, imageUrl, videoUrl, fileUrl, highlight } = req.body;
+  const msg = new Message({
+    sectionId,
+    name,
+    imageUrl,
+    videoUrl,
+    fileUrl,
+    highlight: highlight || false
+  });
   await msg.save();
   res.json(msg);
 });
+
 
 async function ensureGeneralSection() {
   const general = await Section.findOne({ name: "General" });
