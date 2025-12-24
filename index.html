@@ -469,12 +469,20 @@ function initSections() {
 }
 
 /* Load sections from server */
-async function loadSections(){
+async function loadSections() {
     const res = await fetch('/sections');
     const sections = await res.json();
     const bar = document.getElementById("sectionsBar");
     bar.innerHTML = "";
 
+    // ⭐ إضافة General
+    const generalDiv = document.createElement("div");
+    generalDiv.className = "sectionTab";
+    generalDiv.textContent = "General";
+    generalDiv.onclick = () => selectSection(null, generalDiv); // null يعني كل الرسائل القديمة
+    bar.appendChild(generalDiv);
+
+    // إضافة باقي السكشنات
     sections.forEach(sec => {
         const div = document.createElement("div");
         div.className = "sectionTab";
@@ -482,6 +490,26 @@ async function loadSections(){
         div.onclick = () => selectSection(sec._id, div);
         bar.appendChild(div);
     });
+
+    // أزرار + و -
+    const add = document.createElement("div");
+    add.className = "sectionTab add";
+    add.textContent = "+";
+    add.onclick = addSection;
+    bar.appendChild(add);
+
+    const del = document.createElement("div");
+    del.className = "sectionTab del";
+    del.textContent = "-";
+    del.onclick = deleteSection;
+    bar.appendChild(del);
+
+    // اختيار General تلقائيًا عند أول تحميل
+    currentSectionId = null;
+    generalDiv.classList.add("active");
+    loadSectionMessages();
+}
+
 
     /* + button */
     const add = document.createElement("div");
@@ -510,12 +538,14 @@ async function selectSection(id, el){
     loadSectionMessages();
 }
 
-async function loadSectionMessages(){
-    if(!currentSectionId) return;
-    const res = await fetch(`/messages/${currentSectionId}`);
-    const data = await res.json();
+async function loadSectionMessages() {
     const list = document.getElementById("wishlistList");
     list.innerHTML = "";
+
+    let url = currentSectionId ? `/messages/${currentSectionId}` : '/wishlist';
+    const res = await fetch(url);
+    const data = await res.json();
+
     data.forEach(msg => list.appendChild(createBubble(msg)));
 }
 
@@ -571,27 +601,36 @@ window.addEventListener("DOMContentLoaded", initSections);
 
 
 async function addItemToSection() {
-    if(!currentSectionId){
-        alert("اختر سكشن أولًا");
-        return;
-    }
     const input = document.getElementById("item");
     const text = input.value.trim();
     if(!text) return;
 
-    await fetch('/messages', {
-        method: 'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({
-            sectionId: currentSectionId,
-            name: text,
-            createdAt: new Date().toISOString()
-        })
-    });
+    const body = {
+        name: text,
+        createdAt: new Date().toISOString()
+    };
+
+    // لو سكشن محدد، نضيف sectionId، وإلا General
+    if(currentSectionId){
+        body.sectionId = currentSectionId;
+        await fetch('/messages', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify(body)
+        });
+    } else {
+        // General
+        await fetch('/wishlist', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify(body)
+        });
+    }
 
     input.value = "";
     loadSectionMessages();
 }
+
 
 document.getElementById('addButton').onclick = addItemToSection;
 
