@@ -201,6 +201,21 @@ async function ensureGeneralSection() {
     console.log("General section created");
   }
 }
+// تعديل رسالة داخل سكشن
+app.put('/messages_direct/:id', async (req, res) => {
+    try {
+        const updated = await Message.findByIdAndUpdate(req.params.id, { name: req.body.name }, { new: true });
+        res.json(updated);
+    } catch (e) { res.status(500).send(e); }
+});
+
+// مسح رسالة داخل سكشن
+app.delete('/messages_direct/:id', async (req, res) => {
+    try {
+        await Message.findByIdAndDelete(req.params.id);
+        res.json({ success: true });
+    } catch (e) { res.status(500).send(e); }
+});
 
 // ====== Start Server ======
 const PORT = process.env.PORT || 3000;
