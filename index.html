@@ -449,27 +449,28 @@ async function addItem(){
 
 // DELETE item
 async function deleteItem(id, isSection = false) {
-    const url = isSection ? `/messages/${id}` : `/wishlist/${id}`;
-    await fetch(url, { method:'DELETE' });
-    if(isSection) loadSectionMessages();
-    else fetchWishlist();
+    if(!confirm("Are you sure?")) return;
+    // إذا كان isSection صحيحاً نستخدم مسار الميسجات، وإلا نستخدم الـ wishlist
+    const url = isSection ? `/messages_direct/${id}` : `/wishlist/${id}`;
+    
+    await fetch(url, { method: 'DELETE' });
+    loadSectionMessages();
 }
 
-/* ⭐ NEW — Edit message */
-// Edit message
+// EDIT item
 async function editItem(id, oldText, isSection = false) {
     const newText = prompt("Edit your message:", oldText);
-    if (!newText || newText.trim() === oldText) return;
+    if (newText === null || newText.trim() === oldText) return;
 
-    const url = isSection ? `/messages/${id}` : `/wishlist/${id}`;
+    const url = isSection ? `/messages_direct/${id}` : `/wishlist/${id}`;
+    
     await fetch(url, {
         method: 'PUT',
-        headers: {'Content-Type':'application/json'},
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: newText })
     });
 
-    if(isSection) loadSectionMessages();
-    else fetchWishlist();
+    loadSectionMessages();
 }
 
     
@@ -611,33 +612,50 @@ async function deleteSection(){
 }
 
 /* Add item to section or General */
+/* إصلاح وظيفة الإضافة لتدعم الملفات والسكاشن معاً */
 async function addItemToSection() {
     const input = document.getElementById("item");
+    const fileInput = document.getElementById("fileInput");
     const text = input.value.trim();
-    if(!text) return;
+    
+    let imageUrl = null, videoUrl = null, fileUrl = null;
+
+    // 1. منطق رفع الملف أولاً إذا وجد
+    if (fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        // إظهار تنبيه بسيط للمستخدم أثناء الرفع
+        input.placeholder = "Uploading file... please wait"; 
+        const url = await uploadFile(file);
+        if (file.type.startsWith("image")) imageUrl = url;
+        else if (file.type.startsWith("video")) videoUrl = url;
+        else fileUrl = url;
+    }
+
+    if (!text && !imageUrl && !videoUrl && !fileUrl) return;
 
     const body = {
         name: text,
+        imageUrl,
+        videoUrl,
+        fileUrl,
         highlight: highlightMode,
         createdAt: new Date().toISOString()
     };
 
-    if(currentSectionId){
-        body.sectionId = currentSectionId;
-        await fetch('/messages', {
-            method: 'POST',
-            headers: {'Content-Type':'application/json'},
-            body: JSON.stringify(body)
-        });
-    } else {
-        await fetch('/wishlist', {
-            method: 'POST',
-            headers: {'Content-Type':'application/json'},
-            body: JSON.stringify(body)
-        });
-    }
+    // 2. تحديد المسار بناءً على السكشن الحالي
+    let urlEndpoint = currentSectionId ? '/messages' : '/wishlist';
+    if (currentSectionId) body.sectionId = currentSectionId;
 
+    await fetch(urlEndpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+    });
+
+    // 3. إعادة ضبط المدخلات
     input.value = "";
+    input.placeholder = "Type your message...";
+    fileInput.value = "";
     highlightMode = false;
     document.getElementById("highlightBtn").style.background = "#ccff00";
     loadSectionMessages();
