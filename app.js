@@ -10,10 +10,7 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// ====== MongoDB Connection ======
-const dbURI = "mongodb+srv://john:john@john.gevwwjw.mongodb.net/wishList?retryWrites=true&w=majority&appName=john";
-mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => {
+
     console.log('Connected to MongoDB');
     ensureGeneralSection();  // ✅ هذا يضمن وجود General
   })
@@ -165,61 +162,3 @@ app.post('/sections', async (req, res) => {
   res.json(section);
 });
 
-// DELETE سكشن
-app.delete('/sections/:id', async (req, res) => {
-  await Section.findByIdAndDelete(req.params.id);
-  await Message.deleteMany({ sectionId: req.params.id });
-  res.json({ success: true });
-});
-
-// GET رسائل سكشن محدد
-app.get('/messages/:sectionId', async (req, res) => {
-  const messages = await Message.find({ sectionId: req.params.sectionId }).sort({ createdAt: -1 });
-  res.json(messages);
-});
-
-// POST رسالة جديدة في سكشن
-app.post('/messages', async (req, res) => {
-  const { sectionId, name, imageUrl, videoUrl, fileUrl, highlight } = req.body;
-  const msg = new Message({
-    sectionId,
-    name,
-    imageUrl,
-    videoUrl,
-    fileUrl,
-    highlight: highlight || false
-  });
-  await msg.save();
-  res.json(msg);
-});
-
-
-async function ensureGeneralSection() {
-  const general = await Section.findOne({ name: "General" });
-  if (!general) {
-    const newGeneral = new Section({ name: "General" });
-    await newGeneral.save();
-    console.log("General section created");
-  }
-}
-// تعديل رسالة داخل سكشن
-app.put('/messages_direct/:id', async (req, res) => {
-    try {
-        const updated = await Message.findByIdAndUpdate(req.params.id, { name: req.body.name }, { new: true });
-        res.json(updated);
-    } catch (e) { res.status(500).send(e); }
-});
-
-// مسح رسالة داخل سكشن
-app.delete('/messages_direct/:id', async (req, res) => {
-    try {
-        await Message.findByIdAndDelete(req.params.id);
-        res.json({ success: true });
-    } catch (e) { res.status(500).send(e); }
-});
-
-// ====== Start Server ======
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
