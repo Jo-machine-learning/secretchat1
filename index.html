@@ -147,48 +147,47 @@ white-space:pre-wrap;
 }
 
 
-    #lockScreen {
+#lockScreen {
     position: fixed;
-    top:0;
-    left:0;
-    width:100%;
-    height:100%;
-    background: linear-gradient(
-        180deg,
-        #000000 0%,
-        #0f2027 50%,
-        #203a43 75%,
-        #ffffff 100%
-    );
+    inset: 0;
+    background: 
+        linear-gradient(
+            rgba(0,0,0,0.55),
+            rgba(0,0,0,0.75)
+        ),
+        url("images/image2.jpg") center/cover no-repeat;
+    backdrop-filter: blur(6px);
     display:flex;
     flex-direction:column;
+    justify-content:center;
     align-items:center;
+    gap:22px;
     z-index:9999;
-    gap:18px;
 }
-
-    #lockScreen h2{
+#lockScreen h2{
     color:#ccff00;
     font-weight:600;
-    letter-spacing:1px;
-    text-shadow:0 2px 6px rgba(0,0,0,0.7);
+    letter-spacing:1.5px;
+    text-shadow:0 0 12px rgba(204,255,0,0.7);
 }
-
-    .pinBox{
-    background: rgba(0,0,0,0.6);
-    border:2px solid #ccff00;
+.pinBox{
+    background: rgba(0,0,0,0.55);
+    border:1.8px solid rgba(204,255,0,0.8);
     color:#ccff00;
+    backdrop-filter: blur(4px);
 }
 .pinBtn{
-    background: linear-gradient(145deg,#ffffff,#dcdcdc);
+    background: rgba(255,255,255,0.85);
     color:#000;
     font-weight:bold;
-    transition:0.2s;
+    box-shadow:0 0 10px rgba(204,255,0,0.3);
+    transition:0.25s;
 }
 
 .pinBtn:hover{
-    transform: scale(1.08);
     background:#ccff00;
+    box-shadow:0 0 18px rgba(204,255,0,0.9);
+    transform: translateY(-3px);
 }
 
 </style>
@@ -198,7 +197,6 @@ white-space:pre-wrap;
 <!-- LOCK SCREEN -->
 <div id="lockScreen">
 
-<img src="images/image2.jpg" class="lock-image">
 <h2 style="color:white; text-shadow:0 2px 4px rgba(0,0,0,0.3);">Enter PIN to Access Chat</h2>
 <div id="pinBoxes">
 <input class="pinBox" disabled>
