@@ -179,22 +179,34 @@ white-space:pre-wrap;
     text-shadow:0 0 12px rgba(204,255,0,0.7);
 }
 .pinBox{
-    background: rgba(0,0,0,0.45);
+    background: rgba(0,0,0,0.5); /* شفاف لتظهر الخلفية */
     border: 2px solid #ccff00;
-    box-shadow: 0 0 15px rgba(0,0,0,0.6);
+    color: #ccff00; /* النقطة Neon أخضر */
+    text-shadow: 0 0 8px #ccff00;
+    font-size: 1.8rem;
+    text-align: center;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.6);
 }
 
 .pinBtn{
-    background: rgba(255,255,255,0.9);
-    box-shadow: 0 6px 18px rgba(0,0,0,0.6);
+    background: rgba(0,0,0,0.6); /* داكن شفاف */
+    color: #ccff00; /* Neon أخضر */
+    font-weight: bold;
+    font-size: 1.6rem;
+    border: 2px solid #ccff00;
+    border-radius: 15px;
+    box-shadow: 0 0 12px rgba(204,255,0,0.8), 0 0 20px rgba(204,255,0,0.4);
+    transition: 0.2s;
 }
-
 
 .pinBtn:hover{
-    background:#ccff00;
-    box-shadow:0 0 18px rgba(204,255,0,0.9);
+    background: rgba(0,0,0,0.8);
     transform: translateY(-3px);
+    box-shadow: 0 0 18px rgba(204,255,0,1), 0 0 30px rgba(204,255,0,0.6);
 }
+
+
 
 </style>
 </head>
