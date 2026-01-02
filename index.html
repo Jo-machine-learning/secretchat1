@@ -222,7 +222,7 @@ document.querySelectorAll(".pinBtn").forEach(btn=>{
         if(/\d/.test(val)){
             if(typedPIN.length<4){ typedPIN+=val; pinBoxes[typedPIN.length-1].value="•"; }
             if(typedPIN.length===4){
-                if(typedPIN===CORRECT_PIN){ lockScreen.style.display="none"; showWelcomeParty(); }
+                if(typedPIN===CORRECT_PIN){ unlockSuccess(); showWelcomeParty(); }
                 else{ pinBoxes.forEach(b=>b.classList.add("shake"));
                     setTimeout(()=>{ pinBoxes.forEach(b=>{b.value=""; b.classList.remove("shake");}); typedPIN=""; },300);
                 }
@@ -240,8 +240,8 @@ document.addEventListener('keydown', (e) => {
         }
         if (typedPIN.length === 4) {
             if (typedPIN === CORRECT_PIN) {
-                lockScreen.style.display = "none";
-                showWelcomeParty();
+                unlockSuccess();
+               showWelcomeParty(); 
             } else {
                 pinBoxes.forEach(b => b.classList.add("shake"));
                 setTimeout(() => {
@@ -672,6 +672,49 @@ document.getElementById('item').onkeydown = (e) => {
         addItemToSection();
     }
 };
+
+    /* ================= AUTO LOCK SYSTEM ================= */
+
+const AUTO_LOCK_TIME = 60 * 1000; // 1 دقيقة
+let autoLockTimer = null;
+
+/* قفل الشاشة */
+function lockNow() {
+    lockScreen.style.display = "flex";
+    typedPIN = "";
+    pinBoxes.forEach(b => b.value = "");
+}
+
+/* إعادة تشغيل التايمر */
+function resetAutoLock() {
+    clearTimeout(autoLockTimer);
+    autoLockTimer = setTimeout(() => {
+        lockNow();
+    }, AUTO_LOCK_TIME);
+}
+
+/* أي نشاط من المستخدم */
+["click", "keydown", "mousemove", "touchstart", "scroll"].forEach(evt => {
+    document.addEventListener(evt, resetAutoLock);
+});
+
+/* أول ما الصفحة تروح background */
+document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+        lockNow();
+    }
+});
+
+/* لما تفتح الصفحة */
+resetAutoLock();
+
+/* لما تدخل PIN صح */
+function unlockSuccess() {
+    lockScreen.style.display = "none";
+    showWelcomeParty();
+    resetAutoLock();
+}
+
 </script>
 
 
