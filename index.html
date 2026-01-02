@@ -149,18 +149,11 @@ white-space:pre-wrap;
 #lockScreen {
     position: fixed;
     inset: 0;
-
-    /* الصورة */
-    background:
-        linear-gradient(
-            rgba(0,0,0,0.25),
-            rgba(0,0,0,0.45)
-        ),
+    background: 
+        linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.45)),
         url("images/image2.png") center/cover no-repeat;
-
-    /* تقليل البلور */
     backdrop-filter: blur(2px);
-
+    filter: contrast(1.25) saturate(1.35);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -168,6 +161,7 @@ white-space:pre-wrap;
     gap: 22px;
     z-index: 9999;
 }
+
 #lockScreen {
     filter: contrast(1.25) saturate(1.35);
 }
