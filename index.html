@@ -146,24 +146,32 @@ white-space:pre-wrap;
     box-shadow: 0 6px 15px rgba(0,0,0,0.4);
 }
 
-
 #lockScreen {
     position: fixed;
     inset: 0;
-    background: 
+
+    /* الصورة */
+    background:
         linear-gradient(
-            rgba(0,0,0,0.55),
-            rgba(0,0,0,0.75)
+            rgba(0,0,0,0.25),
+            rgba(0,0,0,0.45)
         ),
-        url("images/image2.png") center/cover no-repeat;
-    backdrop-filter: blur(6px);
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    align-items:center;
-    gap:22px;
-    z-index:9999;
+        url("images/image2.jpg") center/cover no-repeat;
+
+    /* تقليل البلور */
+    backdrop-filter: blur(2px);
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 22px;
+    z-index: 9999;
 }
+#lockScreen {
+    filter: contrast(1.25) saturate(1.35);
+}
+
 #lockScreen h2{
     color:#ccff00;
     font-weight:600;
@@ -171,18 +179,16 @@ white-space:pre-wrap;
     text-shadow:0 0 12px rgba(204,255,0,0.7);
 }
 .pinBox{
-    background: rgba(0,0,0,0.55);
-    border:1.8px solid rgba(204,255,0,0.8);
-    color:#ccff00;
-    backdrop-filter: blur(4px);
+    background: rgba(0,0,0,0.45);
+    border: 2px solid #ccff00;
+    box-shadow: 0 0 15px rgba(0,0,0,0.6);
 }
+
 .pinBtn{
-    background: rgba(255,255,255,0.85);
-    color:#000;
-    font-weight:bold;
-    box-shadow:0 0 10px rgba(204,255,0,0.3);
-    transition:0.25s;
+    background: rgba(255,255,255,0.9);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.6);
 }
+
 
 .pinBtn:hover{
     background:#ccff00;
