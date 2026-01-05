@@ -645,7 +645,12 @@ home.onclick = () => {
     loadSectionMessages();
 };
 bar.appendChild(home);
-sections.sort((a,b)=>(a.order ?? 0)-(b.order ?? 0));
+sections.sort((a,b)=>{
+    const orderA = a.order ?? 0;
+    const orderB = b.order ?? 0;
+    return orderA - orderB;
+});
+
 
     // ⭐ General
 // زر إضافة سكشن
@@ -661,6 +666,24 @@ del.className = "sectionTab del";
 del.textContent = "−";
 del.onclick = deleteSection;
 bar.appendChild(del);
+// Home + Add + Delete أولا
+bar.appendChild(home);
+bar.appendChild(add);
+bar.appendChild(del);
+
+// بعدين السكشنات المرتبة
+sections.forEach(sec => {
+    const div = document.createElement("div");
+    div.className = "sectionTab";
+    div.textContent = sec.name;
+    // أزرار move
+    ...
+    if(sec.pinned){
+        bar.appendChild(div);
+    } else {
+        hidden.appendChild(div);
+    }
+});
 
     // باقي السكشنات
 sections.forEach(sec => {
@@ -703,9 +726,9 @@ sections.forEach(sec => {
 
 
     // اختيار General تلقائيًا
-    currentSectionId = null;
-    
-    loadSectionMessages();
+currentSectionId = currentSectionId || null;
+loadSectionMessages();
+
 }
 
 async function selectSection(id, el){
