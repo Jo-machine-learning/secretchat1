@@ -238,20 +238,30 @@ app.put('/sections/:id/pin', async (req, res) => {
   res.json(updated);
 });
 app.put('/sections/:id/move', async (req, res) => {
-  const { direction } = req.body;
-  const current = await Section.findById(req.params.id);
+    const { direction } = req.body; // 1 for down, -1 for up
+    const current = await Section.findById(req.params.id);
+    if (!current) return res.status(404).json({ error: 'Not found' });
 
-  const target = await Section.findOne({
-    order: current.order + direction
-  });
+    // البحث عن السكشن الذي سأتبادل معه المكان
+    const target = await Section.findOne({
+        order: current.order + direction
+    });
 
-  if (!target) return res.json({ success: false });
+    if (target) {
+        // تبديل الأرقام
+        const tempOrder = current.order;
+        current.order = target.order;
+        target.order = tempOrder;
+        
+        await current.save();
+        await target.save();
+    } else {
+        // إذا لم يجد هدف (مثلاً أول سكشن وبتحرك لورا)، نقوم بتحديث الـ order فقط لضمان التسلسل
+        current.order += direction;
+        await current.save();
+    }
 
-  [current.order, target.order] = [target.order, current.order];
-  await current.save();
-  await target.save();
-
-  res.json({ success: true });
+    res.json({ success: true });
 });
 
 // ====== Start Server ======
