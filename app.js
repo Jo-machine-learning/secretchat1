@@ -237,6 +237,22 @@ app.put('/sections/:id/pin', async (req, res) => {
 
   res.json(updated);
 });
+app.put('/sections/:id/move', async (req, res) => {
+  const { direction } = req.body;
+  const current = await Section.findById(req.params.id);
+
+  const target = await Section.findOne({
+    order: current.order + direction
+  });
+
+  if (!target) return res.json({ success: false });
+
+  [current.order, target.order] = [target.order, current.order];
+  await current.save();
+  await target.save();
+
+  res.json({ success: true });
+});
 
 // ====== Start Server ======
 const PORT = process.env.PORT || 3000;
