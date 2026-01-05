@@ -622,17 +622,47 @@ async function loadSections() {
     const res = await fetch('/sections');
     const sections = await res.json();
     const bar = document.getElementById("sectionsBar");
+        const hidden = document.getElementById("hiddenSections");
     bar.innerHTML = "";
-
+      hidden.innerHTML = "";
+const home = document.createElement("div");
+home.className = "sectionTab home active";
+home.textContent = "🏠 Home";
+home.onclick = () => {
+    currentSectionId = null;
+    document.querySelectorAll(".sectionTab").forEach(t => t.classList.remove("active"));
+    home.classList.add("active");
+    loadSectionMessages();
+};
+bar.appendChild(home);
+ sections.sort((a,b)=>a.order-b.order);
     // ⭐ General
+// زر إضافة سكشن
+const add = document.createElement("div");
+add.className = "sectionTab add";
+add.textContent = "+";
+add.onclick = addSection;
+bar.appendChild(add);
+
+// زر مسح سكشن
+const del = document.createElement("div");
+del.className = "sectionTab del";
+del.textContent = "−";
+del.onclick = deleteSection;
+bar.appendChild(del);
 
     // باقي السكشنات
-    sections.forEach(sec => {
+    sections.forEach(sec=>{
         const div = document.createElement("div");
         div.className = "sectionTab";
         div.textContent = sec.name;
-        div.onclick = () => selectSection(sec._id, div);
-        bar.appendChild(div);
+        div.onclick = ()=>selectSection(sec._id, div);
+
+        if(sec.pinned){
+            bar.appendChild(div);       // ⭐ مهم
+        } else {
+            hidden.appendChild(div);    // 👁️‍🗨️ مش مهم
+        }
     });
 
     // أزرار + و -
@@ -802,30 +832,14 @@ document.getElementById("toggleHidden").onclick = () => {
     const h = document.getElementById("hiddenSections");
     h.style.display = h.style.display === "none" ? "flex" : "none";
 };
-async function loadSections() {
-    const res = await fetch('/sections');
-    const sections = await res.json();
 
-    const bar = document.getElementById("sectionsBar");
-    const hidden = document.getElementById("hiddenSections");
-
-    bar.innerHTML = "";
-    hidden.innerHTML = "";
-
-    sections.sort((a,b)=>a.order-b.order);
-
-    sections.forEach(sec=>{
-        const div = document.createElement("div");
-        div.className = "sectionTab";
-        div.textContent = sec.name;
-        div.onclick = ()=>selectSection(sec._id, div);
-
-        if(sec.pinned){
-            bar.appendChild(div);       // ⭐ مهم
-        } else {
-            hidden.appendChild(div);    // 👁️‍🗨️ مش مهم
-        }
+async function moveSection(id, dir) {
+    await fetch(`/sections/${id}/move`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ direction: dir })
     });
+    loadSections();
 }
 
 </script>
