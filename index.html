@@ -652,18 +652,41 @@ del.onclick = deleteSection;
 bar.appendChild(del);
 
     // باقي السكشنات
-    sections.forEach(sec=>{
-        const div = document.createElement("div");
-        div.className = "sectionTab";
-        div.textContent = sec.name;
-        div.onclick = ()=>selectSection(sec._id, div);
+sections.forEach(sec => {
+    const div = document.createElement("div");
+    div.className = "sectionTab";
+    div.textContent = sec.name;
 
-        if(sec.pinned){
-            bar.appendChild(div);       // ⭐ مهم
-        } else {
-            hidden.appendChild(div);    // 👁️‍🗨️ مش مهم
-        }
-    });
+    div.onclick = () => selectSection(sec._id, div);
+
+    // ===== ⬆️⬇️ MOVE BUTTONS (NEW) =====
+    const up = document.createElement("span");
+    up.textContent = "⬆️";
+    up.className = "moveBtn";
+    up.onclick = async (e) => {
+        e.stopPropagation(); // مهم
+        await moveSection(sec._id, -1);
+    };
+
+    const down = document.createElement("span");
+    down.textContent = "⬇️";
+    down.className = "moveBtn";
+    down.onclick = async (e) => {
+        e.stopPropagation(); // مهم
+        await moveSection(sec._id, 1);
+    };
+
+    div.appendChild(up);
+    div.appendChild(down);
+    // ===== END MOVE BUTTONS =====
+
+    if (sec.pinned) {
+        bar.appendChild(div);
+    } else {
+        hidden.appendChild(div);
+    }
+});
+
 
     // أزرار + و -
     const add = document.createElement("div");
