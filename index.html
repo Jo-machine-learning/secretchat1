@@ -227,11 +227,52 @@ white-space:pre-wrap;
     opacity: 1;
 }
 
+<style>
+/* تعريف متغيرات الألوان */
+:root {
+    --bg-body: #000000;
+    --bg-header: #111111;
+    --bg-chat: #0a0a0a;
+    --text-main: #ccff00; /* Neon Green */
+    --bg-bubble: #1a1a1a;
+    --text-bubble: #ffffff;
+    --accent: #ccff00;
+    --section-tab: #333;
+}
 
+/* ألوان الوضع الفاتح */
+[data-theme="light"] {
+    --bg-body: #f0f2f5;
+    --bg-header: #ffffff;
+    --bg-chat: #e5e5e5;
+    --text-main: #1a73e8; /* Blue */
+    --bg-bubble: #ffffff;
+    --text-bubble: #000000;
+    --accent: #1a73e8;
+    --section-tab: #ddd;
+}
+
+* { box-sizing: border-box; transition: background 0.3s ease, color 0.3s ease; }
+body { font-family: Arial, sans-serif; background: var(--bg-body); color: var(--text-bubble); margin:0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+header { background: var(--bg-header); color: var(--text-main); text-align: center; padding: 5px; font-weight: bold; border-bottom: 1px solid var(--accent); }
+
+#sectionsBar { display: flex; gap: 8px; padding: 10px; background: var(--bg-header); overflow-x: auto; white-space: nowrap; }
+.sectionTab { background: var(--section-tab); color: var(--text-bubble); padding: 8px 15px; border-radius: 20px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; font-size: 0.8rem; }
+.sectionTab.active { background: var(--accent); color: #000; font-weight: bold; }
+
+.moveBtn { cursor: pointer; font-size: 0.7rem; opacity: 0.7; }
+.moveBtn:hover { opacity: 1; }
+
+#themeToggle { position: fixed; top: 10px; left: 10px; z-index: 1000; background: none; border: none; font-size: 1.5rem; cursor: pointer; }
+
+/* باقي ستايلات الفقاعات اللي عندك... */
+.bubble { background: var(--bg-bubble); color: var(--text-bubble); border-radius: 15px; padding: 10px; margin: 5px 0; max-width: 80%; }
+</style>
 </style>
 </head>
 <body>
-    
+    <button id="themeToggle">🌓</button>
 <!-- LOCK SCREEN -->
 <div id="lockScreen">
 
@@ -903,7 +944,78 @@ document.getElementById("hiddenToggle").onclick = () => {
         arrow.textContent = "▼ Other Sections";
     }
 };
+// 1. نظام الـ Theme
+const themeToggle = document.getElementById('themeToggle');
+themeToggle.onclick = () => {
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    if (isLight) {
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.setItem('theme', 'dark');
+    } else {
+        document.documentElement.setAttribute('data-theme', 'light');
+        localStorage.setItem('theme', 'light');
+    }
+};
+// تطبيق الثيم المحفوظ
+if(localStorage.getItem('theme') === 'light') document.documentElement.setAttribute('data-theme', 'light');
 
+// 2. تحميل السكاشن مع أزرار التحكم
+async function loadSections() {
+    const res = await fetch('/sections');
+    const sections = await res.json();
+    const bar = document.getElementById("sectionsBar");
+    const hidden = document.getElementById("hiddenSections");
+    
+    bar.innerHTML = "";
+    hidden.innerHTML = "";
+
+    // زر Home
+    const home = document.createElement("div");
+    home.className = "sectionTab" + (currentSectionId === null ? " active" : "");
+    home.innerHTML = "🏠 Home";
+    home.onclick = () => { currentSectionId = null; loadSections(); loadSectionMessages(); };
+    bar.appendChild(home);
+
+    // ترتيب السكاشن
+    sections.sort((a, b) => (a.order || 0) - (b.order || 0));
+
+    sections.forEach(sec => {
+        const div = document.createElement("div");
+        div.className = "sectionTab" + (currentSectionId === sec._id ? " active" : "");
+        
+        // المحتوى: اسم + أزرار
+        div.innerHTML = `
+            <span onclick="event.stopPropagation(); selectSec('${sec._id}')">${sec.name}</span>
+            <span class="moveBtn" onclick="event.stopPropagation(); moveSec('${sec._id}', -1)">◀️</span>
+            <span class="moveBtn" onclick="event.stopPropagation(); moveSec('${sec._id}', 1)">▶️</span>
+            <span onclick="event.stopPropagation(); togglePin('${sec._id}', ${sec.pinned})">${sec.pinned ? '👁️' : '🌑'}</span>
+        `;
+
+        if (sec.pinned) bar.appendChild(div);
+        else hidden.appendChild(div);
+    });
+}
+
+// دالات مساعدة للسكاشن
+async function selectSec(id) { currentSectionId = id; loadSections(); loadSectionMessages(); }
+
+async function moveSec(id, dir) {
+    await fetch(`/sections/${id}/move`, {
+        method: 'PUT',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ direction: dir })
+    });
+    loadSections();
+}
+
+async function togglePin(id, currentStatus) {
+    await fetch(`/sections/${id}/pin`, {
+        method: 'PUT',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ pinned: !currentStatus })
+    });
+    loadSections();
+}
 // تأكد أن زر الإضافة (Send) مربوط بدالة addItemToSection
 document.getElementById('addButton').onclick = addItemToSection;
 </script>
