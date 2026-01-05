@@ -672,18 +672,7 @@ bar.appendChild(add);
 bar.appendChild(del);
 
 // بعدين السكشنات المرتبة
-sections.forEach(sec => {
-    const div = document.createElement("div");
-    div.className = "sectionTab";
-    div.textContent = sec.name;
-    // أزرار move
-    ...
-    if(sec.pinned){
-        bar.appendChild(div);
-    } else {
-        hidden.appendChild(div);
-    }
-});
+
 
     // باقي السكشنات
 sections.forEach(sec => {
@@ -702,6 +691,11 @@ sections.forEach(sec => {
         await moveSection(sec._id, -1);
     };
 
+    if(sec.pinned){
+        bar.appendChild(div);
+    } else {
+        hidden.appendChild(div);
+    }
     const down = document.createElement("span");
     down.textContent = "⬇️";
     down.className = "moveBtn";
