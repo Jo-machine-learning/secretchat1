@@ -645,7 +645,8 @@ home.onclick = () => {
     loadSectionMessages();
 };
 bar.appendChild(home);
- sections.sort((a,b)=>a.order-b.order);
+sections.sort((a,b)=>(a.order ?? 0)-(b.order ?? 0));
+
     // ⭐ General
 // زر إضافة سكشن
 const add = document.createElement("div");
@@ -699,27 +700,21 @@ sections.forEach(sec => {
 
 
     // أزرار + و -
-    const add = document.createElement("div");
-    add.className = "sectionTab add";
-    add.textContent = "+";
-    add.onclick = addSection;
-    bar.appendChild(add);
 
-    const del = document.createElement("div");
-    del.className = "sectionTab del";
-    del.textContent = "-";
-    del.onclick = deleteSection;
-    bar.appendChild(del);
 
     // اختيار General تلقائيًا
     currentSectionId = null;
-    generalDiv.classList.add("active");
+    
     loadSectionMessages();
 }
 
 async function selectSection(id, el){
     currentSectionId = id;
-    document.querySelectorAll(".sectionTab").forEach(t=>t.classList.remove("active"));
+    document.querySelectorAll(".sectionTab").forEach(t=>{
+        if(!t.classList.contains("add") && !t.classList.contains("del")){
+            t.classList.remove("active");
+        }
+    });
     el.classList.add("active");
     loadSectionMessages();
 }
