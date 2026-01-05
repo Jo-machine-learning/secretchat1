@@ -200,6 +200,22 @@ white-space:pre-wrap;
     box-shadow: 0 0 18px rgba(204,255,0,1), 0 0 30px rgba(204,255,0,0.6);
 }
 
+    #hiddenToggle{
+    background:#111;
+    color:#aaa;
+    padding:5px 10px;
+    cursor:pointer;
+    font-size:0.8rem;
+}
+
+#hiddenSections{
+    background:#1a1a1a;
+    display:flex;
+    gap:8px;
+    padding:6px 10px;
+    overflow-x:auto;
+}
+
 
 
 </style>
@@ -240,6 +256,14 @@ white-space:pre-wrap;
 <img src="images/image.jpg" style="width:100%; max-height:100px; margin-top:0; display:block;">
 
 <header>john secret chat💭</header>
+    <div id="sectionsBar"></div>
+
+<div id="hiddenToggle">
+    <span id="toggleHidden">▼ Other Sections</span>
+</div>
+
+<div id="hiddenSections" style="display:none;"></div>
+
 <div id="typingIndicator">● Someone is typing...</div>
 <button id="refreshBtn">🔄 Refresh</button>
 
@@ -601,11 +625,6 @@ async function loadSections() {
     bar.innerHTML = "";
 
     // ⭐ General
-    const generalDiv = document.createElement("div");
-    generalDiv.className = "sectionTab";
-    generalDiv.textContent = "General";
-    generalDiv.onclick = () => selectSection(null, generalDiv);
-    bar.appendChild(generalDiv);
 
     // باقي السكشنات
     sections.forEach(sec => {
@@ -778,6 +797,35 @@ function unlockSuccess() {
     lockScreen.style.display = "none";
     showWelcomeParty();
     resetAutoLock();
+}
+document.getElementById("toggleHidden").onclick = () => {
+    const h = document.getElementById("hiddenSections");
+    h.style.display = h.style.display === "none" ? "flex" : "none";
+};
+async function loadSections() {
+    const res = await fetch('/sections');
+    const sections = await res.json();
+
+    const bar = document.getElementById("sectionsBar");
+    const hidden = document.getElementById("hiddenSections");
+
+    bar.innerHTML = "";
+    hidden.innerHTML = "";
+
+    sections.sort((a,b)=>a.order-b.order);
+
+    sections.forEach(sec=>{
+        const div = document.createElement("div");
+        div.className = "sectionTab";
+        div.textContent = sec.name;
+        div.onclick = ()=>selectSection(sec._id, div);
+
+        if(sec.pinned){
+            bar.appendChild(div);       // ⭐ مهم
+        } else {
+            hidden.appendChild(div);    // 👁️‍🗨️ مش مهم
+        }
+    });
 }
 
 </script>
