@@ -197,25 +197,17 @@ app.get('/messages/:sectionId', async (req, res) => {
 
 // POST رسالة جديدة في سكشن
 app.post('/messages', async (req, res) => {
-  try {
-    const { sectionId, name, imageUrl, videoUrl, fileUrl, highlight } = req.body;
-    if (!sectionId) return res.status(400).json({ error: 'sectionId required' });
-
-    const msg = new Message({
-      sectionId,
-      name,
-      imageUrl,
-      videoUrl,
-      fileUrl,
-      highlight: highlight || false
-    });
-
-    await msg.save();
-    res.json(msg);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to add message' });
-  }
+  const { sectionId, name, imageUrl, videoUrl, fileUrl, highlight } = req.body;
+  const msg = new Message({
+    sectionId,
+    name,
+    imageUrl,
+    videoUrl,
+    fileUrl,
+    highlight: highlight || false
+  });
+  await msg.save();
+  res.json(msg);
 });
 
 
@@ -246,26 +238,12 @@ app.put('/sections/:id/pin', async (req, res) => {
   res.json(updated);
 });
 app.put('/sections/:id/move', async (req, res) => {
-  try {
-    const { direction } = req.body; // -1 = up, 1 = down
-    const sec = await Section.findById(req.params.id);
-    if (!sec) return res.status(404).json({ error: 'Section not found' });
+  const { direction } = req.body;
+  const current = await Section.findById(req.params.id);
 
-    const swapOrder = sec.order + direction;
-    const swapSec = await Section.findOne({ order: swapOrder });
-    if (swapSec) {
-      swapSec.order = sec.order;
-      await swapSec.save();
-    }
-    sec.order = swapOrder;
-    await sec.save();
-
-    res.json({ success: true });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to move section' });
-  }
-});
+  const target = await Section.findOne({
+    order: current.order + direction
+  });
 
   if (!target) return res.json({ success: false });
 
