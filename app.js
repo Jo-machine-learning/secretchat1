@@ -15,7 +15,6 @@ const dbURI = "mongodb+srv://john:john@john.gevwwjw.mongodb.net/wishList?retryWr
 mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => {
     console.log('Connected to MongoDB');
-    ensureGeneralSection();  // ✅ هذا يضمن وجود General
   })
   .catch(err => console.error('MongoDB connection error:', err));
 ;
@@ -135,8 +134,13 @@ app.delete('/wishlist/:id', async (req, res) => {
 
 const sectionSchema = new mongoose.Schema({
   name: String,
+
+  pinned: { type: Boolean, default: true }, // ⭐ مهم ولا مخفي
+  order: { type: Number, default: 0 },      // 🔢 ترتيب السكشن
+
   createdAt: { type: Date, default: Date.now }
 });
+
 const Section = mongoose.model('Section', sectionSchema);
 
 
@@ -153,24 +157,37 @@ const messageSchema = new mongoose.Schema({
 const Message = mongoose.model('Message', messageSchema);
 // GET جميع السكشنات
 app.get('/sections', async (req, res) => {
-  const sections = await Section.find().sort({ createdAt: 1 });
+  const sections = await Section.find().sort({ order: 1 });
+
   res.json(sections);
 });
 
 // POST سكشن جديد
 app.post('/sections', async (req, res) => {
   const { name } = req.body;
-  const section = new Section({ name });
+  const count = await Section.countDocuments();
+
+const section = new Section({
+  name,
+  pinned: true,
+  order: count
+});
+;
   await section.save();
   res.json(section);
 });
 
 // DELETE سكشن
 app.delete('/sections/:id', async (req, res) => {
-  await Section.findByIdAndDelete(req.params.id);
-  await Message.deleteMany({ sectionId: req.params.id });
+  const sec = await Section.findById(req.params.id);
+  if (!sec) return res.status(404).json({ error: 'Section not found' });
+
+  await Message.deleteMany({ sectionId: sec._id });
+  await sec.deleteOne();
+
   res.json({ success: true });
 });
+
 
 // GET رسائل سكشن محدد
 app.get('/messages/:sectionId', async (req, res) => {
@@ -194,14 +211,6 @@ app.post('/messages', async (req, res) => {
 });
 
 
-async function ensureGeneralSection() {
-  const general = await Section.findOne({ name: "General" });
-  if (!general) {
-    const newGeneral = new Section({ name: "General" });
-    await newGeneral.save();
-    console.log("General section created");
-  }
-}
 // تعديل رسالة داخل سكشن
 app.put('/messages_direct/:id', async (req, res) => {
     try {
@@ -216,6 +225,17 @@ app.delete('/messages_direct/:id', async (req, res) => {
         await Message.findByIdAndDelete(req.params.id);
         res.json({ success: true });
     } catch (e) { res.status(500).send(e); }
+});
+app.put('/sections/:id/pin', async (req, res) => {
+  const { pinned } = req.body;
+
+  const updated = await Section.findByIdAndUpdate(
+    req.params.id,
+    { pinned },
+    { new: true }
+  );
+
+  res.json(updated);
 });
 
 // ====== Start Server ======
